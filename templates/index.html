@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> TRUST, CHECKED</div>
+    <h1>Know what’s real.<br><span>Verify with confidence.</span></h1>
+    <p class="hero-lede">Check a certificate against the issuer’s registered record and see whether it is currently active, expired, or revoked.</p>
+    <form class="search-card" action="{{ url_for('verify') }}" method="get">
+      <label for="certificate_id">Certificate ID</label>
+      <div class="search-row"><input id="certificate_id" name="certificate_id" placeholder="e.g. CERT-AB12CD34EF" autocomplete="off" required><button class="btn btn-primary" type="submit">Verify record <span>→</span></button></div>
+      <small>Have a QR code? Scan it with your phone camera to open the official verification page.</small>
+    </form>
+    <div class="trust-note"><span class="check-round">✓</span> No account required for public verification</div>
+  </div>
+  <div class="hero-visual">
+    <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+    <div class="certificate-preview">
+      <div class="preview-top"><span class="mini-seal">✓</span><span>ISSUER RECORD</span><span class="preview-dots">•••</span></div>
+      <div class="preview-rule"></div>
+      <div class="preview-label">CERTIFICATE OF ACHIEVEMENT</div>
+      <div class="preview-name">Jordan Taylor</div>
+      <div class="preview-line long"></div><div class="preview-line medium"></div>
+      <div class="preview-footer"><div><small>RECORD STATUS</small><strong><span class="status-dot"></span> Active</strong></div><div class="preview-stamp">VERIFIED<br>RECORD</div></div>
+    </div>
+    <div class="floating-chip chip-top"><span class="chip-icon">✓</span><span><b>Record matched</b><small>Issuer database</small></span></div>
+    <div class="floating-chip chip-bottom"><span class="qr-pattern">▦</span><span><b>QR verification</b><small>Fast and traceable</small></span></div>
+  </div>
+</section>
+<section class="section-block">
+  <div class="section-heading"><div><div class="eyebrow">HOW IT WORKS</div><h2>Two checks. One clear answer.</h2></div><p>Authenticity and current status are different questions. CertiSure shows both separately.</p></div>
+  <div class="feature-grid">
+    <article class="feature-card"><div class="feature-icon icon-blue">⌕</div><h3>01. Match the record</h3><p>Look up the unique certificate ID in the trusted records entered by the issuing organization.</p></article>
+    <article class="feature-card"><div class="feature-icon icon-green">✓</div><h3>02. Check current status</h3><p>See whether the issuer marks it active or revoked and whether its expiry date has passed.</p></article>
+    <article class="feature-card"><div class="feature-icon icon-purple">▦</div><h3>03. Share by QR</h3><p>Every registered certificate gets a QR code that opens its public verification result.</p></article>
+  </div>
+</section>
+<section class="notice-band"><div class="notice-symbol">i</div><div><b>Verification is only as trustworthy as its source.</b><p>A record match confirms that this app has a matching issuer-entered record. Only an authorized issuer should register certificates; a visual check or QR code alone cannot prove authenticity.</p></div></section>
+{% endblock %}

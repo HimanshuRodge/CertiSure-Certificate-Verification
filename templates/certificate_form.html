@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Register certificate{% endblock %}
+{% block content %}
+<div class="page-heading"><div class="eyebrow">ISSUER CONSOLE</div><h1>Register a certificate</h1><p>Create an issuer record. A unique certificate ID and QR code will be generated automatically.</p></div>
+<form method="post" class="panel record-form">
+  <div class="form-section-title"><span>01</span><div><h2>Certificate details</h2><p>Enter details exactly as they appear on the issued document.</p></div></div>
+  <div class="form-grid">
+    <div class="field"><label for="holder_name">Certificate holder <span class="required">*</span></label><input id="holder_name" name="holder_name" value="{{ form.get('holder_name','') }}" required placeholder="Full name"></div>
+    <div class="field"><label for="certificate_type">Certificate type <span class="required">*</span></label><select id="certificate_type" name="certificate_type" required><option value="">Choose type</option>{% for type in types %}<option value="{{ type }}" {% if form.get('certificate_type') == type %}selected{% endif %}>{{ type }}</option>{% endfor %}</select></div>
+    <div class="field field-full"><label for="title">Certificate title <span class="required">*</span></label><input id="title" name="title" value="{{ form.get('title','') }}" required placeholder="e.g. Python Programming Internship"></div>
+    <div class="field field-full"><label for="issuer_name">Issuing organization <span class="required">*</span></label><input id="issuer_name" name="issuer_name" value="{{ form.get('issuer_name','') }}" required placeholder="Official organization name"></div>
+    <div class="field"><label for="issue_date">Issue date <span class="required">*</span></label><input id="issue_date" type="date" name="issue_date" value="{{ form.get('issue_date','') }}" required></div>
+    <div class="field"><label for="expiry_date">Expiry date <span class="optional">(optional)</span></label><input id="expiry_date" type="date" name="expiry_date" value="{{ form.get('expiry_date') or '' }}"><small>Leave blank if this certificate does not expire.</small></div>
+    <div class="field field-full"><label for="notes">Internal notes <span class="optional">(optional)</span></label><textarea id="notes" name="notes" rows="3" placeholder="Reference notes; avoid sensitive personal data">{{ form.get('notes','') }}</textarea></div>
+  </div>
+  <div class="form-actions"><a class="btn btn-outline" href="{{ url_for('dashboard') }}">Cancel</a><button class="btn btn-primary" type="submit">Register & generate QR <span>→</span></button></div>
+</form>
+{% endblock %}

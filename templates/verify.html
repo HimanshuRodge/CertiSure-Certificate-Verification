@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Verify certificate{% endblock %}
+{% block content %}
+<section class="page-heading"><div class="eyebrow">PUBLIC VERIFICATION</div><h1>Verify a certificate</h1><p>Enter the certificate ID or open this page from the certificate’s QR code.</p></section>
+<div class="verify-layout">
+  <section class="panel verify-panel">
+    <div class="panel-heading"><div class="panel-icon">⌕</div><div><h2>Certificate lookup</h2><p>Search the issuer-record database</p></div></div>
+    <form action="{{ url_for('verify') }}" method="get" class="form-stack">
+      <label for="certificate_id">Certificate ID <span class="required">*</span></label>
+      <input id="certificate_id" name="certificate_id" value="{{ certificate_id }}" placeholder="CERT-AB12CD34EF" required>
+      <button class="btn btn-primary btn-full" type="submit">Check certificate <span>→</span></button>
+    </form>
+    <div class="privacy-note"><span>🔒</span><p>Public verification does not require an account. Only registered certificate records are displayed.</p></div>
+  </section>
+  <aside class="panel explanation-panel"><div class="eyebrow">UNDERSTAND YOUR RESULT</div><h3>Authenticity ≠ validity</h3><div class="explain-row"><span class="explain-check">1</span><div><b>Authenticity / record match</b><p>Does this certificate ID exist in the issuer records held by this system?</p></div></div><div class="explain-row"><span class="explain-check">2</span><div><b>Validity / status</b><p>Is it active today, not expired, and not revoked by the issuer?</p></div></div></aside>
+</div>
+{% if certificate or (certificate_id and status_message) %}
+<section class="result-panel">
+  {% if certificate %}
+    <div class="result-head"><div class="result-icon {% if tone == 'success' %}result-green{% elif tone == 'warning' %}result-amber{% else %}result-red{% endif %}">{% if tone == 'success' %}✓{% elif tone == 'warning' %}!{% else %}×{% endif %}</div><div><div class="eyebrow">ISSUER DATABASE MATCH</div><h2>Certificate record found</h2><p>The certificate ID matches a record in this system. Review its current status below.</p></div><span class="status-pill status-{{ tone }}">{{ status }}</span></div>
+    <div class="result-grid">
+      <div class="result-field"><small>Certificate ID</small><strong>{{ certificate.certificate_id }}</strong></div>
+      <div class="result-field"><small>Certificate holder</small><strong>{{ certificate.holder_name }}</strong></div>
+      <div class="result-field"><small>Certificate title</small><strong>{{ certificate.title }}</strong></div>
+      <div class="result-field"><small>Certificate type</small><strong>{{ certificate.certificate_type }}</strong></div>
+      <div class="result-field"><small>Issuing organization</small><strong>{{ certificate.issuer_name }}</strong></div>
+      <div class="result-field"><small>Issue date</small><strong>{{ certificate.issue_date }}</strong></div>
+      <div class="result-field"><small>Expiry date</small><strong>{{ certificate.expiry_date or 'No expiry recorded' }}</strong></div>
+      <div class="result-field"><small>Issuer status</small><strong>{{ certificate.status }}</strong></div>
+    </div>
+    <div class="status-explanation {% if tone == 'success' %}explain-success{% elif tone == 'warning' %}explain-warning{% else %}explain-danger{% endif %}"><b>Current status: {{ status }}</b><p>{{ status_message }}</p></div>
+    {% if certificate.status == 'Revoked' and certificate.revoked_reason %}<p class="muted small-text">Revocation reason: {{ certificate.revoked_reason }}</p>{% endif %}
+    <p class="disclaimer">This result confirms a matching record in this application’s database, not an independent forensic examination of an uploaded document. Contact the named issuer if you need official confirmation.</p>
+  {% else %}
+    <div class="result-head"><div class="result-icon result-red">×</div><div><div class="eyebrow">NO RECORD MATCH</div><h2>Certificate not found</h2><p>{{ status_message }}</p></div><span class="status-pill status-danger">Unverified</span></div>
+    <div class="status-explanation explain-danger"><b>Authenticity could not be confirmed</b><p>Check the certificate ID for typing errors or contact the issuing organization through its official channel.</p></div>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

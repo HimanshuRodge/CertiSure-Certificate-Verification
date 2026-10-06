@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Admin sign in{% endblock %}
+{% block content %}
+<section class="auth-wrap"><div class="auth-card"><div class="auth-symbol">✓</div><div class="eyebrow">ADMINISTRATOR ACCESS</div><h1>Welcome back</h1><p>Sign in to register and manage issuer records.</p>
+<form method="post" class="form-stack">
+  <label for="username">Username</label><input id="username" name="username" autocomplete="username" required>
+  <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
+  <button class="btn btn-primary btn-full" type="submit">Sign in <span>→</span></button>
+</form>
+<div class="auth-help"><b>First run?</b><p>Default local credentials are listed in README.md. Change them before using this app beyond local testing.</p></div>
+</div></section>
+{% endblock %}
