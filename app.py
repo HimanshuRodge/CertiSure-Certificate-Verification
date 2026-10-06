@@ -20,7 +20,12 @@ os.makedirs(QR_DIR, exist_ok=True)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-development-secret-key")
-app.config["DATABASE"] = os.path.join(INSTANCE_DIR, "certificates.db")
+app.config["DATABASE"] = os.environ.get(
+    "DATABASE_PATH",
+    os.path.join(INSTANCE_DIR, "certificates.db")
+)
+
+os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 
 DEFAULT_ADMIN_USER = os.environ.get("ADMIN_USERNAME", "admin")
