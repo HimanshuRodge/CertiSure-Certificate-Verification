@@ -1,6 +1,7 @@
 import os
 import io
-import sqlite3
+import psycopg2
+from psycopg2.extras import DictCursor
 import secrets
 import string
 from datetime import date, datetime
@@ -20,12 +21,14 @@ os.makedirs(QR_DIR, exist_ok=True)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-development-secret-key")
-app.config["DATABASE"] = os.environ.get(
-    "DATABASE_PATH",
-    os.path.join(INSTANCE_DIR, "certificates.db")
-)
+# PostgreSQL database URL.
+# Set DATABASE_URL in Render Environment Variables.
+app.config["DATABASE_URL"] = os.environ.get("DATABASE_URL")
 
-os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
+if not app.config["DATABASE_URL"]:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is required."
+    )
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 
 DEFAULT_ADMIN_USER = os.environ.get("ADMIN_USERNAME", "admin")
@@ -35,25 +38,51 @@ ALLOWED_TYPES = [
     "Professional", "Achievement", "Participation", "Other"
 ]
 
+class DatabaseConnection:
+    """PostgreSQL wrapper keeping the existing db().execute() style."""
+
+    def __init__(self, database_url):
+        self.database_url = database_url
+        self.conn = None
+
+    def __enter__(self):
+        self.conn = psycopg2.connect(self.database_url)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.conn:
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+            self.conn.close()
+
+    def execute(self, query, params=None):
+        # Convert existing SQLite placeholders to PostgreSQL placeholders.
+        query = query.replace("?", "%s")
+        cursor = self.conn.cursor(cursor_factory=DictCursor)
+        cursor.execute(query, params or ())
+        return cursor
+
+
 def db():
-    conn = sqlite3.connect(app.config["DATABASE"])
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    return DatabaseConnection(app.config["DATABASE_URL"])
+
 
 def init_db():
     with db() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS admins (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 created_at TEXT NOT NULL
             )
         """)
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS certificates (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 certificate_id TEXT UNIQUE NOT NULL,
                 holder_name TEXT NOT NULL,
                 certificate_type TEXT NOT NULL,
@@ -68,11 +97,20 @@ def init_db():
                 revoked_reason TEXT
             )
         """)
-        existing = conn.execute("SELECT id FROM admins WHERE username = ?", (DEFAULT_ADMIN_USER,)).fetchone()
+
+        existing = conn.execute(
+            "SELECT id FROM admins WHERE username = ?",
+            (DEFAULT_ADMIN_USER,)
+        ).fetchone()
+
         if not existing:
             conn.execute(
                 "INSERT INTO admins(username, password_hash, created_at) VALUES(?,?,?)",
-                (DEFAULT_ADMIN_USER, generate_password_hash(DEFAULT_ADMIN_PASSWORD), datetime.utcnow().isoformat(timespec="seconds"))
+                (
+                    DEFAULT_ADMIN_USER,
+                    generate_password_hash(DEFAULT_ADMIN_PASSWORD),
+                    datetime.utcnow().isoformat(timespec="seconds")
+                )
             )
 
 def make_certificate_id():
